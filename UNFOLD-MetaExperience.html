@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNFOLD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────
+   DESIGN SYSTEM
+───────────────────────────────────────────────────── */
+:root {
+  --linen:    #F3EEE5;
+  --linen2:   #EBE4D8;
+  --linen3:   #E2D9CB;
+  --chalk:    #FAF7F2;
+  --ink:      #191510;
+  --ink2:     #38321E;
+  --ink3:     #7A7060;
+  --ink4:     #B8AE9C;
+  --void:     #0D0B07;
+  --void2:    #181410;
+  --void3:    #232018;
+  --cream:    #EDE4D4;
+  --terra:    #B05A2A;
+  --terra2:   #CC7A48;
+  --gold:     #C49A52;
+  --serif:    'Cormorant Garamond', 'Times New Roman', serif;
+  --syne:     'Syne', sans-serif;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html {
+  scroll-behavior: smooth;
+  background: var(--linen);
+}
+
+body {
+  font-family: var(--serif);
+  overflow-x: hidden;
+  cursor: none;
+  background: var(--linen);
+  transition: background 0.8s ease;
+}
+
+/* ─────────────────────────────────────────────────────
+   CURSOR
+───────────────────────────────────────────────────── */
+#cur { position:fixed; width:6px; height:6px; background:var(--terra); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); will-change:left,top; }
+#cur-r { position:fixed; width:32px; height:32px; border:1px solid rgba(176,90,42,0.28); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:left 0.09s, top 0.09s, width 0.3s, height 0.3s; }
+
+/* ─────────────────────────────────────────────────────
+   PROGRESS
+───────────────────────────────────────────────────── */
+#prog { position:fixed; left:0; top:0; height:1px; width:0; background:linear-gradient(90deg,var(--terra),var(--gold)); z-index:1000; }
+
+/* ─────────────────────────────────────────────────────
+   GRAIN OVERLAY
+───────────────────────────────────────────────────── */
+#grain {
+  position:fixed; inset:0; pointer-events:none; z-index:9990; opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  background-repeat:repeat; background-size:180px;
+  mix-blend-mode: multiply;
+}
+
+/* ─────────────────────────────────────────────────────
+   NAV
+───────────────────────────────────────────────────── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:500;
+  padding:1.6rem 5vw;
+  display:flex; justify-content:space-between; align-items:center;
+  mix-blend-mode: normal;
+}
+.nav-mark {
+  font-family:var(--serif); font-style:italic; font-size:1.05rem; font-weight:300;
+  letter-spacing:0.1em; color:var(--ink); opacity:0.5;
+  transition: color 0.6s, opacity 0.6s;
+}
+.nav-mark.light { color:var(--cream); opacity:0.35; }
+.nav-tag {
+  font-family:var(--syne); font-size:0.6rem; letter-spacing:0.3em;
+  text-transform:uppercase; color:var(--ink3); opacity:0;
+  transition: color 0.6s, opacity 0.6s;
+}
+.nav-tag.visible { opacity:1; }
+.nav-tag.light { color:var(--void3); }
+
+/* ─────────────────────────────────────────────────────
+   SECTION SYSTEM
+───────────────────────────────────────────────────── */
+section { position:relative; overflow:hidden; }
+
+/* ─────────────────────────────────────────────────────
+   SCROLL REVEAL
+───────────────────────────────────────────────────── */
+.sr { opacity:0; transform:translateY(44px); transition:opacity 1.4s cubic-bezier(.16,1,.3,1), transform 1.4s cubic-bezier(.16,1,.3,1); }
+.sr.in { opacity:1; transform:none; }
+.sr-l { opacity:0; transform:translateX(-36px); transition:opacity 1.2s cubic-bezier(.16,1,.3,1), transform 1.2s cubic-bezier(.16,1,.3,1); }
+.sr-l.in { opacity:1; transform:none; }
+.sr-r { opacity:0; transform:translateX(36px); transition:opacity 1.2s cubic-bezier(.16,1,.3,1), transform 1.2s cubic-bezier(.16,1,.3,1); }
+.sr-r.in { opacity:1; transform:none; }
+.sr-fade { opacity:0; transition:opacity 1.8s ease; }
+.sr-fade.in { opacity:1; }
+
+.d1 { transition-delay:0.08s; }
+.d2 { transition-delay:0.2s; }
+.d3 { transition-delay:0.36s; }
+.d4 { transition-delay:0.52s; }
+.d5 { transition-delay:0.72s; }
+.d6 { transition-delay:0.95s; }
+
+/* ─────────────────────────────────────────────────────
+   ① COVER
+   Dark. The brand earns its name.
+───────────────────────────────────────────────────── */
+#cover {
+  min-height:100vh;
+  background:var(--void);
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding:0 5vw 5vw;
+}
+.cover-bg-word {
+  position:absolute; font-family:var(--serif); font-style:italic;
+  font-size:clamp(38vw,55vw,65vw); font-weight:300; line-height:.85;
+  color:rgba(30,24,12,1); letter-spacing:-.04em;
+  top:50%; left:-2vw; transform:translateY(-50%);
+  pointer-events:none; user-select:none;
+  animation:bgDrift 20s ease-in-out infinite alternate;
+}
+@keyframes bgDrift { from{transform:translateY(-52%) scale(1)} to{transform:translateY(-48%) scale(1.02)} }
+
+.cover-inner { position:relative; z-index:2; }
+.cover-eyebrow {
+  font-family:var(--syne); font-size:0.58rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--terra2); margin-bottom:1.8rem;
+  opacity:0; animation:fadeUp .7s ease .4s forwards;
+}
+.cover-title {
+  font-family:var(--serif); font-style:italic;
+  font-size:clamp(7rem,18vw,16rem); font-weight:300;
+  color:var(--cream); line-height:.88; letter-spacing:-.03em;
+  opacity:0; animation:fadeUp 1.8s cubic-bezier(.16,1,.3,1) .5s forwards;
+}
+.cover-rule {
+  height:1px; background:rgba(255,255,255,.06); margin:2.2rem 0;
+  opacity:0; animation:fadeIn .8s ease 1.4s forwards;
+}
+.cover-sub {
+  display:flex; gap:3rem; align-items:baseline;
+  opacity:0; animation:fadeUp .9s ease 1.6s forwards;
+}
+.cs-main { font-family:var(--serif); font-size:1.1rem; font-weight:300; font-style:italic; color:var(--terra2); }
+.cs-dim  { font-family:var(--syne); font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--void3); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* ─────────────────────────────────────────────────────
+   ② THE HUMAN TRUTH — A MOMENT HAPPENING
+   Light. Editorial. Slow pace.
+───────────────────────────────────────────────────── */
+#moment {
+  background:var(--linen);
+  padding:14vw 5vw;
+}
+.moment-eyebrow {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:5vw;
+  display:flex; align-items:center; gap:1.2rem;
+}
+.moment-eyebrow::after { content:''; flex:1; max-width:60px; height:1px; background:rgba(176,90,42,.3); }
+.moment-hero {
+  font-size:clamp(3.2rem,7.5vw,7.5rem); font-weight:300; line-height:.95;
+  letter-spacing:-.02em; color:var(--ink);
+  max-width:80vw; margin-bottom:6vw;
+}
+.moment-pull {
+  display:grid; grid-template-columns:1fr 1fr; gap:4vw; align-items:end;
+  margin:8vw 0;
+}
+.mp-left { font-size:clamp(1.5rem,2.8vw,2.8rem); font-weight:300; color:var(--ink2); line-height:1.2; }
+.mp-right { font-size:clamp(.85rem,1.1vw,1.1rem); color:var(--ink3); line-height:1.9; font-family:var(--syne); font-weight:400; max-width:38ch; }
+.moment-quote {
+  font-size:clamp(1.8rem,3.2vw,3.2rem); font-weight:300; font-style:italic;
+  color:var(--ink); border-left:2px solid var(--terra); padding-left:3vw;
+  margin:6vw 0; max-width:72ch;
+}
+.moment-stat-row {
+  display:flex; gap:0; border-top:1px solid rgba(25,21,16,.08);
+  margin-top:8vw;
+}
+.stat-cell {
+  flex:1; padding:3vw 2.5vw; border-right:1px solid rgba(25,21,16,.06);
+}
+.stat-cell:last-child { border-right:none; }
+.stat-n {
+  font-family:var(--serif); font-style:italic;
+  font-size:clamp(2.5rem,5vw,5rem); font-weight:300; color:var(--terra);
+  line-height:1; display:block; margin-bottom:.4rem;
+}
+.stat-l { font-family:var(--syne); font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink3); line-height:1.6; }
+
+/* ─────────────────────────────────────────────────────
+   ③ THE CONFESSION — "I have nothing to wear"
+   Centered. One voice.
+───────────────────────────────────────────────────── */
+#confession {
+  background:var(--linen2);
+  padding:18vw 5vw;
+  text-align:center;
+}
+.conf-pre {
+  font-family:var(--syne); font-size:.62rem; letter-spacing:.28em;
+  text-transform:uppercase; color:var(--ink4); margin-bottom:4vw;
+}
+.conf-quote {
+  font-size:clamp(3.5rem,9vw,9rem); font-weight:300; font-style:italic;
+  color:var(--ink); line-height:.92; letter-spacing:-.025em;
+}
+.conf-after {
+  font-size:clamp(1rem,1.8vw,1.6rem); color:var(--ink3); font-weight:300;
+  margin-top:3vw; font-family:var(--syne);
+}
+.conf-line {
+  width:1px; height:8vw; background:rgba(25,21,16,.1);
+  margin:5vw auto;
+}
+.conf-body {
+  font-size:clamp(1.3rem,2.2vw,2rem); color:var(--ink2); font-weight:300;
+  max-width:52ch; margin:0 auto; line-height:1.5;
+}
+.conf-body em { color:var(--terra); font-style:italic; }
+
+/* ─────────────────────────────────────────────────────
+   ④ THE CONFLICT — both are true
+   Dark moment. Tension made visible.
+───────────────────────────────────────────────────── */
+#conflict {
+  background:var(--void);
+  padding:16vw 5vw;
+  position:relative;
+}
+.conflict-glow {
+  position:absolute; width:60vw; height:60vw; border-radius:50%;
+  background:radial-gradient(circle, rgba(176,90,42,.06), transparent 65%);
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+.conf-item {
+  font-size:clamp(2.8rem,6vw,6rem); font-weight:300; color:var(--cream);
+  line-height:1.15; letter-spacing:-.015em;
+  margin-bottom:1.5vw;
+}
+.conf-item.dim { color:rgba(237,228,212,.3); }
+.conf-center-break {
+  text-align:center; padding:8vw 0;
+}
+.conf-both {
+  font-size:clamp(4rem,10vw,11rem); font-weight:300; font-style:italic;
+  color:var(--cream); line-height:.9; letter-spacing:-.03em;
+}
+.conf-tension {
+  border-left:2px solid var(--terra); padding-left:3vw; margin:6vw 0;
+  max-width:60ch;
+}
+.conf-tension-text {
+  font-size:clamp(1.3rem,2.2vw,2rem); color:rgba(237,228,212,.55);
+  font-weight:300; line-height:1.55;
+}
+.conf-tension-quote {
+  font-size:clamp(1.6rem,2.8vw,2.8rem); color:var(--terra2);
+  font-style:italic; font-weight:300; margin-top:1.2rem;
+}
+.conf-buyagain {
+  text-align:center; padding:6vw 0;
+}
+.conf-buyagain-small {
+  font-family:var(--syne); font-size:.65rem; letter-spacing:.25em;
+  text-transform:uppercase; color:rgba(237,228,212,.25); margin-bottom:1.5rem;
+}
+.conf-buyagain-big {
+  font-size:clamp(3rem,7vw,7rem); font-weight:300; font-style:italic;
+  color:rgba(237,228,212,.55); line-height:.95;
+}
+.conf-buyagain-big span { color:var(--cream); }
+
+/* ─────────────────────────────────────────────────────
+   ⑤ THE INSIGHT
+   The core truth. Maximum silence around it.
+───────────────────────────────────────────────────── */
+#insight {
+  background:var(--linen);
+  padding:18vw 5vw;
+}
+.ins-pre {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:7vw;
+  display:flex; align-items:center; gap:1.2rem;
+}
+.ins-pre::after { content:''; width:48px; height:1px; background:rgba(176,90,42,.3); }
+.ins-a {
+  font-size:clamp(2rem,4vw,4rem); font-weight:300; color:var(--ink2);
+  line-height:1.2; max-width:60ch; margin-bottom:3vw;
+}
+.ins-b {
+  font-size:clamp(2rem,4vw,4rem); font-weight:300; font-style:italic;
+  color:var(--ink); line-height:1.2; max-width:60ch; padding-left:5vw;
+  margin-bottom:12vw;
+}
+/* THE EYE — poster moment */
+.ins-eye-wrap {
+  text-align:center; padding:8vw 0 14vw;
+  position:relative;
+}
+.ins-eye-above {
+  font-family:var(--syne); font-size:.62rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--ink4); margin-bottom:4vw;
+}
+.ins-eye {
+  font-size:clamp(6rem,18vw,18rem); font-weight:300; font-style:italic;
+  color:var(--ink); line-height:.88; letter-spacing:-.03em;
+  display:block;
+}
+.ins-eye-highlight { color:var(--terra); }
+.ins-eye-below {
+  font-size:clamp(1.2rem,2vw,1.8rem); color:var(--ink3); font-weight:300;
+  margin-top:4vw; font-style:italic;
+}
+.ins-rule { height:1px; background:rgba(25,21,16,.07); margin:0 5vw; }
+
+/* ─────────────────────────────────────────────────────
+   ⑥ THE BRAND BELIEF
+   Calm manifesto.
+───────────────────────────────────────────────────── */
+#belief {
+  background:var(--linen2);
+  padding:14vw 5vw;
+}
+.belief-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:8vw; align-items:center;
+}
+.belief-left {}
+.belief-eyebrow {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:3vw;
+}
+.belief-statement {
+  font-size:clamp(2rem,3.5vw,3.5rem); font-weight:300; font-style:italic;
+  color:var(--ink); line-height:1.2; margin-bottom:3vw;
+}
+.belief-body {
+  font-size:clamp(1rem,1.4vw,1.3rem); color:var(--ink3); line-height:1.9;
+  font-family:var(--syne); font-weight:400;
+}
+.belief-right {}
+.belief-manifesto {
+  font-size:clamp(1.4rem,2.2vw,2rem); font-weight:300; font-style:italic;
+  color:var(--ink2); line-height:1.55; padding:3vw 0 3vw 3vw;
+  border-left:2px solid var(--terra);
+}
+.belief-manifesto strong { color:var(--ink); font-weight:400; font-style:normal; }
+.belief-values {
+  display:flex; flex-direction:column; gap:0; margin-top:4vw;
+  border-top:1px solid rgba(25,21,16,.07);
+}
+.bv {
+  display:flex; gap:2vw; align-items:baseline;
+  padding:1.2vw 0; border-bottom:1px solid rgba(25,21,16,.06);
+  transition:padding-left .3s ease;
+}
+.bv:hover { padding-left:1vw; }
+.bv-num { font-family:var(--serif); font-style:italic; font-size:1.6rem; color:rgba(25,21,16,.1); font-weight:300; flex-shrink:0; min-width:2rem; transition:color .3s; }
+.bv:hover .bv-num { color:var(--terra); }
+.bv-text { font-size:clamp(.9rem,1.1vw,1rem); color:var(--ink2); font-family:var(--syne); font-weight:500; letter-spacing:.02em; }
+.belief-pivot {
+  text-align:center; padding:10vw 5vw 6vw;
+}
+.belief-pivot-a {
+  font-size:clamp(1.5rem,2.5vw,2.5rem); color:var(--ink3); font-weight:300; font-style:italic; margin-bottom:1.5rem;
+}
+.belief-pivot-b {
+  font-size:clamp(2.5rem,5vw,5rem); font-weight:300; color:var(--ink); line-height:1.1;
+}
+
+/* ─────────────────────────────────────────────────────
+   ⑦ THE EXPERIENCE — CINEMATIC SECTION
+   Everything changes here.
+───────────────────────────────────────────────────── */
+
+/* ── CINEMATIC CHAPTER DIVIDER */
+.chapter-div {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:var(--void);
+  position:relative; overflow:hidden;
+}
+.chapter-div-bg {
+  position:absolute; font-family:var(--serif); font-style:italic;
+  font-size:clamp(25vw,40vw,50vw); font-weight:300;
+  color:rgba(30,24,12,.8); line-height:.85;
+  pointer-events:none; user-select:none;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+}
+.chapter-div-inner {
+  text-align:center; position:relative; z-index:2;
+}
+.chapter-div-label {
+  font-family:var(--syne); font-size:.6rem; letter-spacing:.32em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:2rem;
+  display:flex; align-items:center; justify-content:center; gap:1.2rem;
+}
+.chapter-div-label::before, .chapter-div-label::after {
+  content:''; width:40px; height:1px; background:rgba(176,90,42,.3);
+}
+.chapter-div-title {
+  font-size:clamp(3.5rem,8vw,8rem); font-weight:300; color:var(--cream);
+  font-style:italic; line-height:.92; letter-spacing:-.025em;
+}
+
+/* ── ENTERING */
+#entering {
+  background:var(--void);
+  padding:14vw 5vw;
+}
+.cin-label {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.35em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:4vw;
+}
+.cin-hero {
+  font-size:clamp(3rem,7vw,7.5rem); font-weight:300; color:var(--cream);
+  line-height:.95; letter-spacing:-.02em; max-width:80vw;
+}
+.cin-body {
+  font-size:clamp(1.1rem,1.6vw,1.5rem); color:rgba(237,228,212,.45);
+  font-weight:300; line-height:1.8; max-width:55ch; margin-top:3vw;
+}
+.cin-body strong { color:var(--cream); font-weight:400; }
+.cin-items {
+  display:flex; flex-direction:column; gap:0; margin:6vw 0;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.cin-item {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:1.4vw 0; border-bottom:1px solid rgba(255,255,255,.04);
+}
+.cin-item-name { font-size:clamp(.9rem,1.4vw,1.3rem); color:rgba(237,228,212,.35); }
+.cin-item-tag {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.12em;
+  text-transform:uppercase; color:rgba(176,90,42,.5);
+  border:1px solid rgba(176,90,42,.2); padding:3px 12px; border-radius:100px;
+}
+
+/* TIMER — full screen */
+#timer-screen {
+  min-height:100vh; background:var(--void);
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+.timer-num {
+  font-family:var(--serif); font-style:italic;
+  font-size:clamp(18vw,30vw,36vw); font-weight:300;
+  color:var(--cream); line-height:.88; letter-spacing:-.04em;
+  text-align:center; width:100%;
+  animation:timerPulse 4s ease-in-out infinite;
+}
+@keyframes timerPulse {
+  0%,100%{opacity:.9} 50%{opacity:1}
+}
+.timer-below {
+  position:absolute; bottom:6vw; left:0; right:0; text-align:center;
+  font-family:var(--syne); font-size:.6rem; letter-spacing:.28em;
+  text-transform:uppercase; color:rgba(237,228,212,.15);
+}
+
+/* ── INSIDE THE BOOTH */
+#inside {
+  background:var(--void2);
+  padding:12vw 5vw;
+}
+.booth-line {
+  font-size:clamp(2.5rem,5.5vw,6rem); font-weight:300; color:var(--cream);
+  line-height:1.05; letter-spacing:-.015em;
+  margin-bottom:2.5vw;
+}
+.booth-line.faint { color:rgba(237,228,212,.28); }
+.booth-line.accent { color:var(--terra2); font-style:italic; }
+.booth-rule { width:60px; height:1px; background:rgba(237,228,212,.1); margin:4vw 0; }
+.booth-close {
+  font-size:clamp(1.3rem,2vw,1.8rem); color:rgba(237,228,212,.4); font-style:italic; max-width:48ch;
+}
+
+/* ── STEPPING OUT — THE WALL */
+.stepout-div {
+  min-height:100vh; background:var(--void); display:flex; align-items:center;
+  padding:0 5vw; position:relative; overflow:hidden;
+}
+.stepout-label {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.35em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:4vw;
+}
+.stepout-hero {
+  font-size:clamp(3.5rem,8vw,8rem); font-weight:300; color:var(--cream);
+  line-height:.92; letter-spacing:-.025em;
+}
+#wall-section {
+  background:var(--void);
+  padding:10vw 5vw;
+}
+.wall-top {
+  display:grid; grid-template-columns:1fr 1fr; gap:5vw; margin-bottom:5vw;
+}
+.wall-stat-big {
+  font-family:var(--serif); font-style:italic;
+  font-size:clamp(4rem,9vw,10rem); font-weight:300; color:var(--terra2);
+  line-height:.9;
+}
+.wall-desc {
+  font-size:clamp(1.2rem,1.8vw,1.7rem); color:rgba(237,228,212,.45);
+  font-weight:300; line-height:1.7; align-self:end;
+}
+.wall-desc strong { color:var(--cream); font-weight:400; }
+
+/* Wall photo grid */
+#wall-grid {
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:3px; margin:3vw 0;
+}
+.wall-cell {
+  aspect-ratio:3/4;
+  opacity:0; transform:translateY(10px);
+  transition:opacity .5s ease, transform .5s ease;
+}
+.wall-cell.on { opacity:1; transform:none; }
+
+.wall-revelation {
+  display:flex; flex-direction:column; gap:2vw; margin-top:6vw;
+}
+.wr-line {
+  font-size:clamp(2rem,4.5vw,4.5rem); font-weight:300;
+  line-height:1; letter-spacing:-.01em;
+}
+.wr-line.c { color:var(--cream); }
+.wr-line.d { color:rgba(237,228,212,.25); }
+.wr-line.a { color:var(--terra2); font-style:italic; }
+
+/* ── THE QUESTION */
+#question-section {
+  min-height:100vh; background:var(--void);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:5vw; text-align:center;
+  position:relative;
+}
+.q-label {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.35em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:5vw;
+}
+.q-text {
+  font-size:clamp(3rem,7.5vw,8rem); font-weight:300; font-style:italic;
+  color:var(--cream); line-height:.98; letter-spacing:-.025em;
+  max-width:88vw;
+}
+.q-below {
+  font-size:clamp(1rem,1.5vw,1.4rem); color:rgba(237,228,212,.35);
+  font-weight:300; margin-top:5vw; max-width:44ch; font-style:italic;
+}
+
+/* ── GOING BACK IN */
+#backin {
+  background:var(--void2); padding:12vw 5vw;
+}
+.bi-label {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.35em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:4vw;
+}
+.bi-question {
+  font-size:clamp(3rem,7vw,7rem); font-weight:300; font-style:italic;
+  color:var(--cream); line-height:.95; letter-spacing:-.02em;
+  margin-bottom:6vw;
+}
+.bi-split {
+  display:grid; grid-template-columns:1fr 1fr; gap:6vw; align-items:end;
+}
+.bi-left {}
+.bi-old { font-size:clamp(1.4rem,2vw,2rem); color:rgba(237,228,212,.35); font-weight:300; margin-bottom:1.5rem; }
+.bi-new { font-size:clamp(1.8rem,3vw,3rem); color:var(--cream); font-weight:300; font-style:italic; }
+.bi-right {}
+.bi-mirror {
+  font-size:clamp(1.4rem,2.2vw,2rem); color:rgba(237,228,212,.45); font-weight:300; line-height:1.5; margin-bottom:1.2rem;
+}
+.bi-mirror-b { color:var(--terra2); font-style:italic; font-size:clamp(1.6rem,2.5vw,2.5rem); font-weight:300; }
+
+/* ── THE MOMENT */
+#the-moment {
+  background:var(--void); padding:12vw 5vw;
+}
+.tm-label {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.35em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:4vw;
+}
+.tm-sequence {
+  display:flex; flex-direction:column; gap:3vw;
+}
+.tm-s { font-size:clamp(2rem,4.5vw,4.5rem); font-weight:300; color:var(--cream); line-height:1; letter-spacing:-.01em; }
+.tm-s.small { font-size:clamp(1.1rem,1.6vw,1.5rem); color:rgba(237,228,212,.35); font-style:italic; }
+.tm-s.accent { color:var(--terra2); font-style:italic; }
+.tm-rule { width:60px; height:1px; background:rgba(237,228,212,.1); }
+
+/* BELONGING — full screen */
+#belonging {
+  min-height:100vh; background:var(--void);
+  display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+}
+.belonging-word {
+  font-family:var(--serif); font-style:italic;
+  font-size:clamp(14vw,22vw,26vw); font-weight:300;
+  color:var(--cream); line-height:.88; letter-spacing:-.04em;
+  text-align:center; position:relative; z-index:2;
+}
+.belonging-glow {
+  position:absolute; width:80vw; height:80vw; border-radius:50%;
+  background:radial-gradient(circle, rgba(176,90,42,.06), transparent 60%);
+  top:50%; left:50%; transform:translate(-50%,-50%);
+}
+
+/* UNFOLD REVEAL */
+#brand-reveal {
+  min-height:100vh; background:var(--void);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:5vw; text-align:center; position:relative;
+}
+.br-pre {
+  font-size:clamp(.9rem,1.4vw,1.2rem); color:rgba(237,228,212,.3);
+  font-weight:300; font-style:italic; margin-bottom:3vw; max-width:44ch;
+}
+.br-word {
+  font-family:var(--serif); font-style:italic;
+  font-size:clamp(10vw,20vw,22vw); font-weight:300; font-style:italic;
+  color:var(--terra); line-height:.85; letter-spacing:-.04em;
+}
+.br-below {
+  font-size:clamp(1rem,1.4vw,1.2rem); color:rgba(237,228,212,.2);
+  font-weight:300; margin-top:4vw; font-style:italic; max-width:38ch;
+  font-family:var(--syne); font-size:.7rem; letter-spacing:.15em;
+}
+
+/* REALISATION */
+#realisation {
+  min-height:100vh; background:var(--void2);
+  display:flex; align-items:center; justify-content:center;
+  padding:5vw; text-align:center;
+}
+.real-wrap { max-width:90vw; }
+.real-pre {
+  font-family:var(--syne); font-size:.6rem; letter-spacing:.28em;
+  text-transform:uppercase; color:rgba(237,228,212,.2); margin-bottom:4vw;
+}
+.real-quote {
+  font-size:clamp(3rem,7vw,7.5rem); font-weight:300; font-style:italic;
+  color:var(--cream); line-height:.96; letter-spacing:-.025em;
+}
+.real-rule { width:40px; height:1px; background:rgba(237,228,212,.08); margin:4vw auto; }
+.real-note {
+  font-size:clamp(.9rem,1.2vw,1.1rem); color:rgba(237,228,212,.3);
+  font-weight:300; max-width:44ch; margin:0 auto; font-family:var(--syne);
+}
+
+/* ─────────────────────────────────────────────────────
+   ⑧ PRODUCTION
+   Return to light. Credibility.
+───────────────────────────────────────────────────── */
+#production {
+  background:var(--linen);
+  padding:14vw 5vw;
+}
+.prod-eyebrow {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:5vw;
+  display:flex; align-items:center; gap:1.2rem;
+}
+.prod-eyebrow::after { content:''; width:48px; height:1px; background:rgba(176,90,42,.3); }
+.prod-head {
+  font-size:clamp(2.5rem,5vw,5rem); font-weight:300; color:var(--ink);
+  line-height:1.0; letter-spacing:-.015em; max-width:70vw; margin-bottom:5vw;
+}
+.prod-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:1px;
+  background:rgba(25,21,16,.06); margin:5vw 0;
+}
+.prod-cell {
+  background:var(--linen); padding:3.5vw;
+  transition:background .3s;
+}
+.prod-cell:hover { background:var(--linen2); }
+.prod-n {
+  font-family:var(--serif); font-style:italic;
+  font-size:clamp(3rem,5vw,5rem); color:rgba(25,21,16,.05);
+  line-height:1; display:block; margin-bottom:1rem; font-weight:300;
+}
+.prod-title {
+  font-family:var(--syne); font-size:.65rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:.7rem;
+  font-weight:500;
+}
+.prod-body { font-size:clamp(.85rem,1.1vw,1rem); color:var(--ink3); line-height:1.85; font-family:var(--syne); font-weight:400; }
+.prod-sustain {
+  margin-top:1px; padding:3vw;
+  background:rgba(176,90,42,.04);
+  border:1px solid rgba(176,90,42,.12);
+}
+.prod-sustain-label {
+  font-family:var(--syne); font-size:.6rem; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:.8rem;
+}
+.prod-sustain-text {
+  font-size:clamp(.9rem,1.1vw,1rem); color:var(--ink3); line-height:1.85;
+  font-family:var(--syne); font-weight:400;
+}
+
+/* ─────────────────────────────────────────────────────
+   ⑨ WHAT THEY LEAVE WITH
+   Slow. Personal. The emotional resolution.
+───────────────────────────────────────────────────── */
+#leaving {
+  background:var(--linen2);
+  padding:18vw 5vw;
+}
+.leave-eyebrow {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--terra); margin-bottom:6vw;
+  display:flex; align-items:center; gap:1.2rem;
+}
+.leave-eyebrow::after { content:''; width:48px; height:1px; background:rgba(176,90,42,.3); }
+.leave-not {
+  font-size:clamp(1.5rem,2.8vw,2.6rem); font-weight:300;
+  color:var(--ink3); line-height:1.2; max-width:55ch; margin-bottom:2vw;
+}
+.leave-yes {
+  font-size:clamp(2.5rem,5.5vw,5.5rem); font-weight:300;
+  color:var(--ink); line-height:1.0; max-width:75vw; margin:3vw 0 5vw;
+}
+.leave-share {
+  padding:4vw 0 4vw 3vw; border-left:2px solid var(--terra);
+  max-width:65ch; margin:5vw 0;
+}
+.leave-share-pre {
+  font-size:clamp(.85rem,1.1vw,1rem); color:var(--ink3); font-style:italic;
+  margin-bottom:1.2rem; font-family:var(--syne); font-size:.65rem; letter-spacing:.06em;
+}
+.leave-share-quote {
+  font-size:clamp(1.8rem,3.2vw,3.2rem); font-weight:300; font-style:italic;
+  color:var(--terra); line-height:1.2;
+}
+.leave-spread {
+  text-align:center; padding:6vw 0;
+}
+.leave-spread-text {
+  font-size:clamp(1.5rem,2.8vw,2.8rem); font-weight:300; color:var(--ink);
+  line-height:1.3; max-width:55ch; margin:0 auto;
+}
+.leave-spread-sub {
+  font-size:clamp(.9rem,1.2vw,1.1rem); color:var(--ink3); font-style:italic;
+  margin-top:1.5rem;
+}
+
+/* Three-line pause section */
+.pause-section {
+  padding:10vw 5vw; text-align:center;
+}
+.pause-line {
+  font-size:clamp(2.5rem,6vw,6.5rem); font-weight:300; font-style:italic;
+  color:var(--ink); line-height:.95; letter-spacing:-.02em;
+  padding:3.5vw 0;
+  display:block;
+  border-bottom:1px solid rgba(25,21,16,.05);
+}
+.pause-line:last-child { border-bottom:none; }
+
+/* ─────────────────────────────────────────────────────
+   ⑩ FINALE
+   The brand earns its close.
+───────────────────────────────────────────────────── */
+#finale {
+  min-height:100vh; background:var(--void);
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding:0 5vw 6vw; position:relative; overflow:hidden;
+}
+.finale-bg {
+  position:absolute; font-family:var(--serif); font-style:italic;
+  font-size:clamp(35vw,55vw,65vw); font-weight:300;
+  color:rgba(24,20,12,.95); line-height:.85;
+  top:50%; left:-3vw; transform:translateY(-50%);
+  pointer-events:none; user-select:none;
+}
+.finale-inner { position:relative; z-index:2; }
+.finale-statement {
+  font-size:clamp(4rem,10vw,11rem); font-weight:300; font-style:italic;
+  color:var(--cream); line-height:.92; letter-spacing:-.03em;
+  margin-bottom:4vw;
+}
+.finale-statement span { color:var(--terra); }
+.finale-rule { height:1px; background:rgba(255,255,255,.05); margin-bottom:2.5vw; }
+.finale-credits {
+  font-family:var(--syne); font-size:.58rem; letter-spacing:.2em;
+  text-transform:uppercase; color:rgba(255,255,255,.1);
+}
+
+/* ─────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────── */
+@media(max-width:768px) {
+  .moment-pull, .belief-grid, .bi-split, .wall-top, .prod-grid { grid-template-columns:1fr; gap:3vw; }
+  #wall-grid { grid-template-columns:repeat(6,1fr); }
+  .cover-sub { flex-direction:column; gap:1rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="grain"></div>
+<div id="cur"></div>
+<div id="cur-r"></div>
+<div id="prog"></div>
+
+<nav id="nav">
+  <div class="nav-mark" id="nav-mark">Unfold</div>
+  <div class="nav-tag" id="nav-tag">D&AD · Power of Experiential</div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     COVER
+═══════════════════════════════════════ -->
+<section id="cover" data-dark="true" data-chapter="Cover">
+  <div class="cover-bg-word">U</div>
+  <div class="cover-inner">
+    <p class="cover-eyebrow">D&AD · Power of Experiential · 2025</p>
+    <h1 class="cover-title">UNFOLD</h1>
+    <div class="cover-rule"></div>
+    <div class="cover-sub">
+      <span class="cs-main">A Launch Experience</span>
+      <span class="cs-dim">Speculative Experiential Project</span>
+      <span class="cs-dim">A case study in seeing.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     A MOMENT HAPPENING
+═══════════════════════════════════════ -->
+<section id="moment" data-dark="false" data-chapter="A Moment Happening">
+  <div class="moment-eyebrow sr">01 — A Moment Happening</div>
+  <h2 class="moment-hero sr d1">You're walking<br>through a mall.</h2>
+  <div class="moment-pull">
+    <div class="mp-left sr-l d2">You weren't planning to stop.</div>
+    <div class="mp-right sr-r d3">But a small crowd is gathered around something that doesn't look like a store.<br><br>It looks like a photo exhibition.</div>
+  </div>
+  <blockquote class="moment-quote sr d2">People in very ordinary clothes.<br><em style="color:var(--terra)">Looking unexpectedly extraordinary.</em></blockquote>
+  <div class="moment-pull sr d3" style="margin-top:6vw">
+    <div class="mp-left">Forty-eight photos.<br>Forty-eight outfits.</div>
+    <div class="mp-right">"3 minutes. 6 pieces. If you do it well, your photo goes up here."<br><br>A guide notices you looking. <em>"You have three minutes inside. Six pieces. Wear them however you like. If it's interesting, you join the wall."</em><br><br>Now you're not just curious. <strong>You want to try.</strong></div>
+  </div>
+  <p class="sr d4" style="font-size:clamp(2rem,4vw,3.5rem); color:var(--ink2); font-weight:300; font-style:italic; margin-top:8vw; text-align:right; padding-right:5vw">You step forward without thinking twice.</p>
+</section>
+
+<!-- ═══════════════════════════════════════
+     WHY THIS HAPPENS
+═══════════════════════════════════════ -->
+<section id="confession" data-dark="false" data-chapter="Why This Happens">
+  <p class="conf-pre sr">We all say the same thing:</p>
+  <h2 class="conf-quote sr d1">"I have nothing<br>to wear."</h2>
+  <p class="conf-after sr d2">Said standing in front of a full wardrobe.</p>
+  <div class="conf-line sr d3"></div>
+  <p class="conf-body sr d3">But our wardrobes are full.<br>We don't lack clothes.<br>We lack <em>the feeling of newness.</em></p>
+  <div class="moment-stat-row sr d4">
+    <div class="stat-cell">
+      <span class="stat-n" data-target="148">0</span>
+      <span class="stat-l">Average pieces<br>in a Gen Z wardrobe</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-n" data-target="68">0</span>
+      <span class="stat-l">New items bought<br>per person per year</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-n" data-target="70" data-suffix="%">0</span>
+      <span class="stat-l">Of those pieces<br>rarely or never worn</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     THE CONFLICT
+═══════════════════════════════════════ -->
+<section id="conflict" data-dark="true" data-chapter="The Conflict">
+  <div class="conflict-glow"></div>
+  <div class="conf-item sr">Gen Z loves fashion.</div>
+  <div class="conf-item dim sr d1">Gen Z cares about the planet.</div>
+  <div class="conf-center-break">
+    <div class="conf-both sr d2">Both<br>are true.</div>
+  </div>
+  <div class="conf-tension sr d3">
+    <p class="conf-tension-text">Living between these two truths creates a quiet tension.</p>
+    <p class="conf-tension-quote">"I want to look new.<br>I don't want to waste."</p>
+  </div>
+  <div class="conf-buyagain sr d4">
+    <p class="conf-buyagain-small">So we solve it the easiest way we know.</p>
+    <p class="conf-buyagain-big">We <span>buy again.</span></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     THE INSIGHT
+═══════════════════════════════════════ -->
+<section id="insight" data-dark="false" data-chapter="The Insight">
+  <div class="ins-pre sr">04 — The Insight</div>
+  <p class="ins-a sr d1">It was never about how many clothes we own.</p>
+  <p class="ins-b sr d2">It was about how we were looking at them.</p>
+  <div class="ins-rule"></div>
+  <div class="ins-eye-wrap">
+    <p class="ins-eye-above sr">Newness is not in the wardrobe.</p>
+    <span class="ins-eye sr d1">It's in <em class="ins-eye-highlight">the eye.</em></span>
+    <p class="ins-eye-below sr d3">And eyes can change.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     THE BRAND BELIEF
+═══════════════════════════════════════ -->
+<section id="belief" data-dark="false" data-chapter="The Brand Belief">
+  <div class="belief-grid">
+    <div class="belief-left">
+      <p class="belief-eyebrow sr">05 — The Brand Belief</p>
+      <h2 class="belief-statement sr d1">Unfold exists<br>in this tension.</h2>
+      <p class="belief-body sr d2">A modular clothing brand designed to be worn in multiple ways. Not to give you more clothes. But to give you more ways to see the ones you already have.</p>
+    </div>
+    <div class="belief-right">
+      <p class="belief-manifesto sr d2">Not to give you more clothes.<br><br><strong>But to give you more ways to see the ones you already have.</strong></p>
+      <div class="belief-values sr d3">
+        <div class="bv"><span class="bv-num">01</span><span class="bv-text">Perspective over purchase</span></div>
+        <div class="bv"><span class="bv-num">02</span><span class="bv-text">Creativity over consumption</span></div>
+        <div class="bv"><span class="bv-num">03</span><span class="bv-text">Identity over trend</span></div>
+        <div class="bv"><span class="bv-num">04</span><span class="bv-text">Sustainability through use</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="belief-pivot">
+    <p class="belief-pivot-a sr">So instead of telling people this…</p>
+    <p class="belief-pivot-b sr d1">We built a room where they<br>could discover it themselves.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     EXPERIENCE CHAPTER DIVIDER
+═══════════════════════════════════════ -->
+<div class="chapter-div" data-dark="true" data-chapter="The Experience">
+  <div class="chapter-div-bg">VII</div>
+  <div class="chapter-div-inner">
+    <div class="chapter-div-label sr">06 — The Experience as Proof</div>
+    <h2 class="chapter-div-title sr d1">The Experience<br>Design</h2>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     ENTERING
+═══════════════════════════════════════ -->
+<section id="entering" data-dark="true" data-chapter="Entering">
+  <div class="cin-label sr">— Entering</div>
+  <h2 class="cin-hero sr d1">The guide hands you<br>six pieces of clothing.</h2>
+  <p class="cin-body sr d2">Different textures. Different shapes. Nothing fancy.<br><strong>No instructions.</strong></p>
+  <p class="cin-body sr d3" style="margin-top:2vw">A full-length mirror.<br>A rail with the six pieces.<br>A digital timer on the wall.</p>
+  <div class="cin-items sr d4">
+    <div class="cin-item"><span class="cin-item-name">White tee</span><span class="cin-item-tag">Piece 01</span></div>
+    <div class="cin-item"><span class="cin-item-name">Black jeans</span><span class="cin-item-tag">Piece 02</span></div>
+    <div class="cin-item"><span class="cin-item-name">Denim jacket</span><span class="cin-item-tag">Piece 03</span></div>
+    <div class="cin-item"><span class="cin-item-name">Silk scarf</span><span class="cin-item-tag">Piece 04</span></div>
+    <div class="cin-item"><span class="cin-item-name">White shirt</span><span class="cin-item-tag">Piece 05</span></div>
+    <div class="cin-item"><span class="cin-item-name">Blazer</span><span class="cin-item-tag">Piece 06</span></div>
+  </div>
+</section>
+
+<!-- TIMER -->
+<section id="timer-screen" data-dark="true" data-chapter="Entering">
+  <div class="timer-num sr">03:00</div>
+  <p class="timer-below sr d2">Three minutes. Six pieces. Whatever you create — that is who you are right now.</p>
+</section>
+
+<!-- INSIDE THE BOOTH -->
+<section id="inside" data-dark="true" data-chapter="Entering">
+  <div class="booth-line sr">You look at the clothes.</div>
+  <div class="booth-line sr d1">Then at yourself.</div>
+  <div class="booth-rule sr d2"></div>
+  <div class="booth-line faint sr d2">You start with the safest choice.</div>
+  <div class="booth-line accent sr d3">Then change it.</div>
+  <div class="booth-line accent sr d4" style="opacity:.6">Then change it again.</div>
+  <div class="booth-rule sr d4"></div>
+  <p class="booth-close sr d5">You realise three minutes is shorter than you thought.<br><br>The timer hits zero.<br><em style="color:rgba(237,228,212,.5)">This is how you see the clothes. Right now.</em></p>
+</section>
+
+<!-- STEPPING OUT -->
+<div class="stepout-div" data-dark="true" data-chapter="Stepping out">
+  <div style="position:relative;z-index:2;width:100%">
+    <p class="stepout-label sr">— Stepping out</p>
+    <h2 class="stepout-hero sr d1">You step out<br>adjusting a sleeve.</h2>
+    <p class="stepout-hero sr d2" style="font-style:italic; color:rgba(237,228,212,.45); font-size:clamp(2rem,4.5vw,5rem); margin-top:2vw">And then you turn.</p>
+  </div>
+</div>
+
+<!-- THE WALL -->
+<section id="wall-section" data-dark="true" data-chapter="Stepping out">
+  <div class="wall-top">
+    <div>
+      <p class="wall-stat-big sr">48</p>
+      <p style="color:var(--terra2); font-style:italic; font-size:clamp(1.2rem,1.8vw,1.6rem); margin-top:.5rem;" class="sr d1">The same six pieces.</p>
+    </div>
+    <div class="wall-desc sr d2">
+      <strong>That's when you see The Wall properly for the first time.</strong><br><br>
+      Forty-eight photos. The same six pieces you just wore.<br>
+      Layered. Twisted. Wrapped. Reversed. Reimagined.
+    </div>
+  </div>
+
+  <!-- The Wall — 48 photos -->
+  <div id="wall-grid" class="sr d3"></div>
+
+  <div class="wall-revelation">
+    <p class="wr-line c sr">You look at The Wall.</p>
+    <p class="wr-line d sr d1">You look at yourself.</p>
+    <p class="wr-line a sr d2">Back at The Wall.</p>
+  </div>
+  <p style="font-size:clamp(1.5rem,2.5vw,2.5rem); color:rgba(237,228,212,.45); font-style:italic; margin-top:4vw; max-width:48ch;" class="sr d3">Something feels… off.<br><em style="color:rgba(237,228,212,.25)">Not wrong. Just incomplete.</em></p>
+</section>
+
+<!-- THE QUESTION -->
+<section id="question-section" data-dark="true" data-chapter="The question">
+  <p class="q-label sr">— The question</p>
+  <p style="font-size:clamp(.9rem,1.2vw,1.1rem); color:rgba(237,228,212,.25); font-style:italic; margin-bottom:2vw;" class="sr d1">The guide stands beside you. He looks at The Wall with you.</p>
+  <h2 class="q-text sr d2">"Which one<br>surprised you<br>the most?"</h2>
+  <p class="q-below sr d3">You scan the photos. You point without thinking.<br>And you realise — you never even considered wearing it like that.</p>
+</section>
+
+<!-- GOING BACK IN -->
+<section id="backin" data-dark="true" data-chapter="Going back in">
+  <p class="bi-label sr">— Going back in</p>
+  <h2 class="bi-question sr d1">"Want to try again?"</h2>
+  <div class="bi-split">
+    <div class="bi-left sr-l d2">
+      <p class="bi-old">Back into the booth.</p>
+      <p class="bi-new">Same six pieces.<br>Different eyes.</p>
+    </div>
+    <div class="bi-right sr-r d3">
+      <p class="bi-mirror">You pick up the piece you ignored before.</p>
+      <p class="bi-mirror-b">You stop trying to be safe.<br>You start trying to be interesting.</p>
+    </div>
+  </div>
+  <p style="font-size:clamp(1.5rem,2.8vw,2.5rem); color:rgba(237,228,212,.35); font-weight:300; line-height:1.4; margin-top:6vw;" class="sr d4">The mirror doesn't feel like a mirror now.<br><em style="color:var(--terra2)">It feels like a possibility.</em></p>
+</section>
+
+<!-- THE MOMENT -->
+<section id="the-moment" data-dark="true" data-chapter="The moment">
+  <p class="tm-label sr">— The moment</p>
+  <div class="tm-sequence">
+    <p class="tm-s sr d1">You step out again.</p>
+    <p class="tm-s small sr d2">Smiling without noticing.</p>
+    <div class="tm-rule sr d3"></div>
+    <p class="tm-s sr d3">A photo is taken.</p>
+    <p class="tm-s sr d4">Printed instantly.</p>
+    <p class="tm-s sr d5">Pinned onto The Wall.</p>
+  </div>
+</section>
+
+<!-- BELONGING -->
+<section id="belonging" data-dark="true" data-chapter="The moment">
+  <div class="belonging-glow"></div>
+  <h2 class="belonging-word sr">Belonging.</h2>
+</section>
+
+<!-- BRAND REVEAL -->
+<section id="brand-reveal" data-dark="true" data-chapter="The moment">
+  <p class="br-pre sr">For the first time, you notice a word on the back:</p>
+  <h1 class="br-word sr d1">Unfold.</h1>
+  <p class="br-below sr d3">No one told you that. You discovered it yourself.</p>
+</section>
+
+<!-- REALISATION -->
+<section id="realisation" data-dark="true" data-chapter="What just happened">
+  <div class="real-wrap">
+    <p class="real-pre sr">What just happened</p>
+    <h2 class="real-quote sr d1">"I don't need more clothes<br>to feel new."</h2>
+    <div class="real-rule sr d3"></div>
+    <p class="real-note sr d4">You walked in wanting to try something fun.<br>You walked out thinking this. Nobody told you.<br>You discovered it yourself.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PRODUCTION
+═══════════════════════════════════════ -->
+<section id="production" data-dark="false" data-chapter="Production">
+  <div class="prod-eyebrow sr">07 — Production</div>
+  <h2 class="prod-head sr d1">Designed to travel.<br>Built to prove its values.</h2>
+  <div class="prod-grid">
+    <div class="prod-cell sr"><span class="prod-n">01</span><p class="prod-title">Venue</p><p class="prod-body">Central mall atrium · High foot-traffic urban zones · 12m × 8m · 5m ceiling · Natural foot traffic eliminates media spend.</p></div>
+    <div class="prod-cell sr d1"><span class="prod-n">02</span><p class="prod-title">The Wall</p><p class="prod-body">Modular aluminium · 5m × 4m · Reprinted daily · Panels reused across all cities · Certified 3-city minimum reuse.</p></div>
+    <div class="prod-cell sr d2"><span class="prod-n">03</span><p class="prod-title">The Booths</p><p class="prod-body">Flat-pack sustainable timber · LED timer only · No screens inside · 2-day build · 4-hour strike · 2 booths simultaneously.</p></div>
+    <div class="prod-cell sr d3"><span class="prod-n">04</span><p class="prod-title">The Guides</p><p class="prod-body">2 per shift · No uniform · Dressed like the audience · One question only · Never sell · Never explain · Create space.</p></div>
+  </div>
+  <div class="prod-sustain sr d4">
+    <p class="prod-sustain-label">Sustainability in the production itself</p>
+    <p class="prod-sustain-text">All materials certified for 3-city reuse. Wall panels travel flat-packed. UNFOLD garments used in the installation go on sale after each city closes. 100% recycled print stock. If a decision can't survive the scrutiny of someone who just walked out of that booth — it doesn't belong here.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     WHAT THEY LEAVE WITH
+═══════════════════════════════════════ -->
+<section id="leaving" data-dark="false" data-chapter="What They Leave With">
+  <div class="leave-eyebrow sr">08 — What They Leave With</div>
+  <p class="leave-not sr d1">They don't leave talking about the installation.</p>
+  <p class="leave-not sr d2">They don't leave talking about the brand.</p>
+  <p class="leave-yes sr d3">They leave talking about<br>what they realised.</p>
+  <div class="leave-share sr d4">
+    <p class="leave-share-pre">They post their picture with a caption they were never asked to write:</p>
+    <p class="leave-share-quote">"I don't need more<br>to feel new."</p>
+  </div>
+  <div class="leave-spread sr d4">
+    <p class="leave-spread-text">That sentence spreads.<br>Not because a brand said it.<br>Because they felt it.</p>
+  </div>
+  <p style="font-size:clamp(1.2rem,1.8vw,1.6rem); color:var(--ink3); font-style:italic; margin:4vw 0;" class="sr d5">And the next time they stand in front of their wardrobe…</p>
+</section>
+
+<!-- THREE-LINE PAUSE -->
+<section class="pause-section" data-dark="false" data-chapter="What They Leave With" style="background:var(--linen2)">
+  <span class="pause-line sr">They pause.</span>
+  <span class="pause-line sr d1">They try differently.</span>
+  <span class="pause-line sr d2">They see differently.</span>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FINALE
+═══════════════════════════════════════ -->
+<section id="finale" data-dark="true" data-chapter="Finale">
+  <div class="finale-bg">U</div>
+  <div class="finale-inner">
+    <h2 class="finale-statement sr">That is where<br><span>Unfold</span><br>truly begins.</h2>
+    <div class="finale-rule sr d2"></div>
+    <p class="finale-credits sr d3">UNFOLD &nbsp;·&nbsp; D&AD Power of Experiential &nbsp;·&nbsp; Speculative Work &nbsp;·&nbsp; 2025</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────
+     JAVASCRIPT
+───────────────────────────────────────────────────── -->
+<script>
+// CURSOR
+const cur = document.getElementById('cur');
+const curR = document.getElementById('cur-r');
+let mx = innerWidth/2, my = innerHeight/2;
+let rx = mx, ry = my;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+});
+(function tick() {
+  rx += (mx-rx)*0.07; ry += (my-ry)*0.07;
+  curR.style.left = rx+'px'; curR.style.top = ry+'px';
+  requestAnimationFrame(tick);
+})();
+
+// PROGRESS
+const prog = document.getElementById('prog');
+window.addEventListener('scroll', () => {
+  prog.style.width = (scrollY/(document.body.scrollHeight-innerHeight)*100)+'%';
+}, {passive:true});
+
+// NAV DARK TOGGLE
+const navMark = document.getElementById('nav-mark');
+const navTag  = document.getElementById('nav-tag');
+navTag.classList.add('visible');
+
+const darkSections = document.querySelectorAll('[data-dark]');
+const navIO = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const dark = e.target.dataset.dark === 'true';
+      navMark.classList.toggle('light', dark);
+      navTag.classList.toggle('light', dark);
+    }
+  });
+}, {threshold:.5});
+darkSections.forEach(s => navIO.observe(s));
+
+// SCROLL REVEALS
+const revIO = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+}, {threshold:.06});
+document.querySelectorAll('.sr,.sr-l,.sr-r,.sr-fade').forEach(el => revIO.observe(el));
+
+// STAT COUNTERS
+const statIO = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const target = +el.dataset.target;
+    const suffix = el.dataset.suffix || '';
+    let start = null;
+    (function step(ts) {
+      if (!start) start = ts;
+      const p = Math.min((ts-start)/1600, 1);
+      const ease = 1 - Math.pow(1-p, 3);
+      el.textContent = Math.floor(ease*target) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target + suffix;
+    })(performance.now());
+    statIO.unobserve(el);
+  });
+}, {threshold:.5});
+document.querySelectorAll('[data-target]').forEach(el => statIO.observe(el));
+
+// WALL GRID BUILD
+const grid = document.getElementById('wall-grid');
+const shades = [
+  '#2C2820','#342E26','#282218','#302820','#201A12',
+  '#382E24','#262018','#3A3228','#201C14','#302A22',
+  '#241E16','#3C342A','#221C14','#2A2418','#1C1810',
+  '#362C22','#262018','#30281E','#1A1612','#2C2620',
+];
+for (let i = 0; i < 48; i++) {
+  const cell = document.createElement('div');
+  cell.className = 'wall-cell';
+  const shade = shades[i % shades.length];
+  const warmth = i % 5 === 0 ? `rgba(176,90,42,0.${Math.floor(Math.random()*4)+1})` : 'transparent';
+  cell.style.cssText = `background:linear-gradient(135deg,${shade},${shade});position:relative;`;
+  cell.style.background = shade;
+  grid.appendChild(cell);
+}
+const wallIO = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    grid.querySelectorAll('.wall-cell').forEach((c,i) =>
+      setTimeout(() => c.classList.add('on'), i*18)
+    );
+    wallIO.disconnect();
+  }
+}, {threshold:.1});
+wallIO.observe(grid);
+
+// COVER PARALLAX
+const covBg = document.querySelector('#cover .cover-bg-word');
+window.addEventListener('scroll', () => {
+  if (scrollY < innerHeight*2)
+    covBg.style.transform = `translateY(calc(-50% + ${scrollY*0.1}px)) scale(${1+scrollY*0.00003})`;
+}, {passive:true});
+
+// BELONGING / FINALE parallax ghosts
+const finBg = document.querySelector('.finale-bg');
+window.addEventListener('scroll', () => {
+  const r = finBg.getBoundingClientRect();
+  if (r.top < innerHeight && r.bottom > 0) {
+    finBg.style.transform = `translateY(calc(-50% + ${-r.top*0.06}px))`;
+  }
+}, {passive:true});
+</script>
+</body>
+</html>
